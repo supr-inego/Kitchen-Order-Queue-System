@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Customer, Product, Order, Queue
@@ -23,19 +23,6 @@ class QueueViewSet(viewsets.ModelViewSet):
     queryset = Queue.objects.all().order_by("-created_at")
     serializer_class = QueueSerializer
 
-    @action(detail=False, methods=["post"])
-    def next(self, request):
-        # Mark the next waiting ticket as cooking (or serving) and return it
-        next_ticket = Queue.objects.filter(status="waiting").order_by("created_at").first()
-        if not next_ticket:
-            return Response({"detail": "No waiting ticket available."}, status=status.HTTP_404_NOT_FOUND)
-
-        next_ticket.status = "cooking"
-        next_ticket.save()
-
-        serializer = self.get_serializer(next_ticket)
-        return Response(serializer.data)
-
     def create(self, request, *args, **kwargs):
         # Generate the next ticket number
         last_ticket = Queue.objects.count()
@@ -45,3 +32,23 @@ class QueueViewSet(viewsets.ModelViewSet):
         request.data["status"] = "waiting"
 
         return super().create(request, *args, **kwargs)
+
+    @action(detail=False, methods=["post"], url_path="next")
+    def next_ticket(self, request):
+        next_in_line = (
+            Queue.objects.filter(status="waiting")
+            .order_by("ticket_number")
+            .first()
+        )
+        if not next_in_line:
+            return Response(
+                {"detail": "No waiting tickets."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        next_in_line.status = "serving"
+        next_in_line.save(update_fields=["status"])
+        return Response(
+            {"ticket": next_in_line.ticket_number, "id": next_in_line.id},
+            status=status.HTTP_200_OK,
+        )

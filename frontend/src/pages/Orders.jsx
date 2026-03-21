@@ -133,6 +133,30 @@ export default function Orders() {
     }
   }
 
+  async function updateOrderStatus(id, status) {
+    const aliases = {
+      prepared: "preparing",
+      complete: "completed",
+      done: "completed",
+    };
+    const normalized = aliases[status] || status;
+
+    try {
+      const res = await api.patch(`/orders/${id}/`, { status: normalized });
+      setOrders(orders.map((o) => (o.id === id ? res.data : o)));
+    } catch (err) {
+      console.log(err);
+      setMsg("Failed to update order status.");
+    }
+  }
+
+  function badgeClass(status) {
+    if (status === "cancelled") return "bg-red-100 text-red-800";
+    if (status === "completed") return "bg-green-100 text-green-800";
+    if (status === "preparing") return "bg-amber-100 text-amber-800";
+    return "bg-gray-100 text-gray-800";
+  }
+
   function getCustomerName(id) {
     const c = customers.find((x) => x.id === Number(id));
     return c ? c.name : `Customer #${id}`;
@@ -362,6 +386,23 @@ export default function Orders() {
                       </div>
 
                       <div className="flex items-center gap-3">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${badgeClass(
+                            o.status
+                          )}`}
+                        >
+                          {o.status || "pending"}
+                        </span>
+                        <select
+                          className="rounded-xl border px-2 py-1 text-sm bg-white"
+                          value={o.status || "pending"}
+                          onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="preparing">Preparing</option>
+                          <option value="completed">Complete</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
                         <div className="text-lg font-extrabold">
                           ₱ {money(orderTotal)}
                         </div>

@@ -4,6 +4,7 @@ import Customers from "./pages/Customers";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Queue from "./pages/Queue";
+import TrackOrder from "./pages/TrackOrder.jsx";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/customers" element={<Customers />} />
             <Route path="/products" element={<Products />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/track-order" element={<TrackOrder />} />
             <Route path="/queues" element={<Queue />} />
             <Route path="*" element={<Navigate to="/customers" replace />} />
           </Routes>

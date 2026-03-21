@@ -15,8 +15,23 @@ class Product(models.Model):
         return self.name
 
 class Order(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_PREPARING = "preparing"
+    STATUS_READY = "ready"
+    STATUS_COMPLETED = "completed"
+    STATUS_CANCELLED = "cancelled"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_PREPARING, "Preparing"),
+        (STATUS_READY, "Ready"),
+        (STATUS_COMPLETED, "Completed"),
+        (STATUS_CANCELLED, "Cancelled"),
+    ]
+
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="orders")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 
     def __str__(self):
         return f"Order #{self.id}"

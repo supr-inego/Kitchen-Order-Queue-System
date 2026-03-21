@@ -34,7 +34,16 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "customer", "created_at", "items", "items_payload"]
+        fields = ["id", "customer", "created_at", "updated_at", "status", "items", "items_payload"]
+
+    def validate_status(self, value):
+        normalized = (value or "").strip().lower()
+        aliases = {
+            "prepared": "preparing",
+            "complete": "completed",
+            "done": "completed",
+        }
+        return aliases.get(normalized, normalized)
 
     def create(self, validated_data):
         items_data = validated_data.pop("items_payload", [])
