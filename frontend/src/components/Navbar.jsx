@@ -11,12 +11,12 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-2xl bg-black text-white grid place-items-center font-bold">
-            IK
+            CR
           </div>
 
           <div className="leading-tight">
-            <div className="font-extrabold">Isang Kagat</div>
-            <div className="text-xs text-gray-500">bakit mo ko iniwan?</div>
+            <div className="font-extrabold">Crammer's Restaurant</div>
+            <div className="text-xs text-gray-500">Kitchen Order Queue System</div>
           </div>
         </div>
 
