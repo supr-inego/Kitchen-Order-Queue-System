@@ -1,4 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Customer, Product, Order, Queue
 from .serializers import CustomerSerializer, ProductSerializer, OrderSerializer, QueueSerializer
 
@@ -20,6 +22,19 @@ class OrderViewSet(viewsets.ModelViewSet):
 class QueueViewSet(viewsets.ModelViewSet):
     queryset = Queue.objects.all().order_by("-created_at")
     serializer_class = QueueSerializer
+
+    @action(detail=False, methods=["post"])
+    def next(self, request):
+        # Mark the next waiting ticket as cooking (or serving) and return it
+        next_ticket = Queue.objects.filter(status="waiting").order_by("created_at").first()
+        if not next_ticket:
+            return Response({"detail": "No waiting ticket available."}, status=status.HTTP_404_NOT_FOUND)
+
+        next_ticket.status = "cooking"
+        next_ticket.save()
+
+        serializer = self.get_serializer(next_ticket)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         # Generate the next ticket number

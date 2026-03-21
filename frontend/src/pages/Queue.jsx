@@ -46,11 +46,11 @@ export default function Queue() {
     }
   }
 
-  // call next (serve next user)
+  // call next (start cooking next waiting ticket)
   async function callNext() {
     try {
       const res = await api.post("/queue/next/");
-      setMsg(`Now serving ticket #${res.data.ticket}`);
+      setMsg(`Now cooking ticket #${res.data.ticket_number}`);
       fetchQueue();
     } catch (err) {
       console.log(err);
@@ -176,6 +176,12 @@ export default function Queue() {
                   <td className="p-3 capitalize">{q.status}</td>
                   <td className="p-3">
                     <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => updateStatus(q.id, "cooking")}
+                        className="border px-3 py-1 rounded-xl"
+                      >
+                        Cooking
+                      </button>
                       <button
                         onClick={() => updateStatus(q.id, "serving")}
                         className="border px-3 py-1 rounded-xl"

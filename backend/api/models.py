@@ -28,9 +28,22 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)  # snapshot
 
 class Queue(models.Model):
+    STATUS_WAITING = "waiting"
+    STATUS_COOKING = "cooking"
+    STATUS_SERVING = "serving"
+    STATUS_DONE = "done"
+
+    STATUS_CHOICES = [
+        (STATUS_WAITING, "Waiting"),
+        (STATUS_COOKING, "Cooking"),
+        (STATUS_SERVING, "Serving"),
+        (STATUS_DONE, "Done"),
+    ]
+
     ticket_number = models.IntegerField(unique=True)
     name = models.CharField(max_length=120)
-    status = models.CharField(max_length=20, default='waiting')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_WAITING)
     created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return f"Queue #{self.ticket_number} - {self.name}"
