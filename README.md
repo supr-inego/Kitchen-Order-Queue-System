@@ -147,6 +147,7 @@ npm run dev
 
 * Cyril Inego Dayak
 * Kyle Angela F. Jumilla
+* Meri Cairylle Ara Comique
 * Merryl Gabrielle Louise Ignacio
 * Dominic O. Gabac
 * Jastine V. Agana
