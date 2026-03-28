@@ -75,9 +75,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ordering_db',
+        'NAME': 'ordering_dbb',
         'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'Cyrilgwapo12',
         'HOST': 'localhost',
         'PORT': '5432',
     }

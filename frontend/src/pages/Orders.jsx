@@ -31,9 +31,9 @@ export default function Orders() {
       const p = await api.get("/products/");
       const o = await api.get("/orders/");
 
-      setCustomers(c.data);
-      setProducts(p.data);
-      setOrders(o.data);
+      setCustomers(Array.isArray(c.data) ? c.data : []);
+      setProducts(Array.isArray(p.data) ? p.data : []);
+      setOrders(Array.isArray(o.data) ? o.data : []);
     } catch (err) {
       console.log(err);
       setMsg("Failed to load order data.");
@@ -61,7 +61,6 @@ export default function Orders() {
     setItems(copy);
   }
 
-  // ---------- CART ----------
   const cart = [];
 
   for (let i = 0; i < items.length; i++) {
@@ -115,6 +114,7 @@ export default function Orders() {
 
       setCustomerId("");
       setItems([{ product: "", quantity: 1 }]);
+      setMsg("Order created successfully.");
     } catch (err) {
       console.log(err);
       setMsg("Failed to create order.");
@@ -153,6 +153,7 @@ export default function Orders() {
   function badgeClass(status) {
     if (status === "cancelled") return "bg-red-100 text-red-800";
     if (status === "completed") return "bg-green-100 text-green-800";
+    if (status === "ready") return "bg-blue-100 text-blue-800";
     if (status === "preparing") return "bg-amber-100 text-amber-800";
     return "bg-gray-100 text-gray-800";
   }
@@ -164,7 +165,6 @@ export default function Orders() {
 
   function getOrderTotal(order) {
     let total = 0;
-
     const list = order.items || [];
 
     for (let i = 0; i < list.length; i++) {
@@ -177,7 +177,6 @@ export default function Orders() {
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">Orders</h1>
@@ -200,7 +199,6 @@ export default function Orders() {
         </div>
       )}
 
-      {/* CREATE ORDER */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 rounded-2xl bg-white border shadow-sm overflow-hidden">
           <div className="p-4 border-b flex items-start justify-between">
@@ -304,7 +302,6 @@ export default function Orders() {
           </div>
         </div>
 
-        {/* CART SUMMARY */}
         <div className="rounded-2xl bg-white border shadow-sm overflow-hidden">
           <div className="p-4 border-b">
             <div className="font-bold">Cart Summary</div>
@@ -318,9 +315,9 @@ export default function Orders() {
               <div className="text-sm text-gray-500">No items yet.</div>
             ) : (
               <div className="space-y-3">
-                {cart.map((c) => (
+                {cart.map((c, index) => (
                   <div
-                    key={c.productId}
+                    key={`${c.productId}-${index}`}
                     className="flex justify-between items-start"
                   >
                     <div>
@@ -348,14 +345,11 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* ORDER HISTORY */}
       <div className="rounded-2xl bg-white border shadow-sm overflow-hidden">
         <div className="p-4 border-b flex justify-between">
           <div>
             <div className="font-bold">Order History</div>
-            <div className="text-sm text-gray-500">
-              Latest orders first.
-            </div>
+            <div className="text-sm text-gray-500">Latest orders first.</div>
           </div>
 
           <div className="text-xs text-gray-500">{orders.length} orders</div>
@@ -376,7 +370,14 @@ export default function Orders() {
                   <div key={o.id} className="rounded-2xl border bg-white">
                     <div className="p-4 border-b flex justify-between items-start">
                       <div>
-                        <div className="font-bold">Order #{o.id}</div>
+                        <div className="font-bold">
+                          Order #{o.id}
+                          {o.queue_ticket?.ticket_number ? (
+                            <span className="ml-2 text-xs text-gray-500">
+                              • Ticket #{o.queue_ticket.ticket_number}
+                            </span>
+                          ) : null}
+                        </div>
                         <div className="text-sm text-gray-500">
                           Customer: {customerName} •{" "}
                           {o.created_at
@@ -393,16 +394,21 @@ export default function Orders() {
                         >
                           {o.status || "pending"}
                         </span>
+
                         <select
                           className="rounded-xl border px-2 py-1 text-sm bg-white"
                           value={o.status || "pending"}
-                          onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                          onChange={(e) =>
+                            updateOrderStatus(o.id, e.target.value)
+                          }
                         >
                           <option value="pending">Pending</option>
                           <option value="preparing">Preparing</option>
+                          <option value="ready">Ready</option>
                           <option value="completed">Complete</option>
                           <option value="cancelled">Cancelled</option>
                         </select>
+
                         <div className="text-lg font-extrabold">
                           ₱ {money(orderTotal)}
                         </div>

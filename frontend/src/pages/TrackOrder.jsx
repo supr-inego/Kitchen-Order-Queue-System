@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { api } from "../api/api";
 
-const STATUS_FLOW = ["pending", "preparing", "completed"];
+const STATUS_FLOW = ["pending", "preparing", "ready", "completed"];
 
 function normalizeStatus(status) {
   const normalized = (status || "").toLowerCase().trim();
   const aliases = {
     prepared: "preparing",
-    ready: "completed",
     complete: "completed",
     done: "completed",
   };
@@ -108,14 +107,20 @@ export default function TrackOrder() {
           </div>
 
           <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {STATUS_FLOW.map((status, idx) => {
                 const isCurrent = idx === currentIndex;
+                const isDone = currentIndex > idx;
+
                 return (
                   <div
                     key={status}
                     className={`rounded-xl border px-3 py-3 text-center text-sm font-medium ${
-                      isCurrent ? "bg-black text-white border-black" : "bg-white"
+                      isCurrent
+                        ? "bg-black text-white border-black"
+                        : isDone
+                        ? "bg-gray-100 border-gray-300"
+                        : "bg-white"
                     }`}
                   >
                     {labelStatus(status)}
