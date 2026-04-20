@@ -164,4 +164,4 @@ npm run dev
 
 ## 📄 License
 
-This project is for academic use.
+This project is for academic use..
