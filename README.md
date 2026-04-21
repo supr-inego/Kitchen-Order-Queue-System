@@ -151,6 +151,7 @@ npm run dev
 * Merryl Gabrielle Louise Ignacio
 * Dominic O. Gabac
 * Jastine V. Agana
+* Gabriel D. LLacuna
 
 ---
 
