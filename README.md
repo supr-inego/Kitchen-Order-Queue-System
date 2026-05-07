@@ -151,6 +151,7 @@ npm run dev
 * Merryl Gabrielle Louise Ignacio
 * Dominic O. Gabac
 * Jastine V. Agana
+* Gabriel D. LLacuna
 
 ---
 
@@ -164,4 +165,4 @@ npm run dev
 
 ## 📄 License
 
-This project is for academic use.
+This project is for academic use..
