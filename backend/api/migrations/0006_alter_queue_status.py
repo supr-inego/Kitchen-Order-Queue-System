@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0005_fix_missing_updated_at_column'),
+        ('api', '0001_initial'),
     ]
 
     operations = [

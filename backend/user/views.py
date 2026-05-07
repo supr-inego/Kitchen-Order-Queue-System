@@ -15,6 +15,19 @@ from user.serializers import (
 )
 
 
+class UserRootView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({
+            'register': 'register/',
+            'login': 'login/',
+            'profile': 'profile/',
+            'logout': 'logout/',
+            'token_refresh': 'token/refresh/',
+        }, status=status.HTTP_200_OK)
+
+
 class UserRegistrationView(APIView):
     permission_classes = [AllowAny]
 

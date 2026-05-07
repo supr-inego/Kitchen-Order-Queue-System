@@ -5,8 +5,20 @@ from user.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'address', 'age', 'birthday', 'phone', 'date_joined', 'updated_at']
-        read_only_fields = ['id', 'date_joined', 'updated_at']
+        fields = [
+            'id',
+            'email',
+            'first_name',
+            'last_name',
+            'address',
+            'age',
+            'birthday',
+            'phone',
+            'is_active',
+            'date_joined',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'is_active', 'date_joined', 'updated_at']
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -17,6 +29,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password', 'password_confirm', 'first_name', 'last_name', 'address', 'age', 'birthday', 'phone']
 
+    def validate_email(self, value):
+        return value.lower()
+
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError({"password": "Passwords do not match."})
@@ -24,6 +39,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+        validated_data['is_active'] = True
         return User.objects.create_user(**validated_data)
 
 
