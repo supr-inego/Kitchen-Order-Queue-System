@@ -1,4 +1,4 @@
-# 🍽️ Crammer's Restaurant — Kitchen Order Queue System
+# 🍽️ Crammer's Restaurant - Kitchen Order Queue System
 
 A full-stack restaurant ordering and kitchen management system with role-based access control, real-time order tracking, and a kitchen queue workflow.
 
@@ -224,8 +224,7 @@ Routes are protected by `ProtectedRoute` in `App.jsx`, which redirects users to 
 ### Order Status Flow
 
 ```
-pending → preparing → ready → completed
-                           → cancelled
+pending → preparing → ready → completed → cancelled
 ```
 
 ### Queue Status Flow (mirrors order status)
