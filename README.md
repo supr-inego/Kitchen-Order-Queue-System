@@ -1,38 +1,72 @@
-# Crammer's Restaurant — Kitchen Order Queue System 
+# 🍽️ Crammer's Restaurant — Kitchen Order Queue System
 
-A full-stack restaurant ordering system with:
-- **Product images** (via URL — paste any Google Image address)
-- **Discount coupons** (%, fixed ₱, or free cheapest item)
-- **No admin self-registration** — all registrations are customers only
-- **Mobile-ready API** — same backend works for React Native / Expo apps
+A full-stack restaurant ordering platform designed for seamless ordering and kitchen management across web and mobile devices.
 
 ---
 
-## Stack
+## 📋 Table of Contents
 
-| Layer | Tech |
-|---|---|
-| Backend | Django 6 + DRF + SimpleJWT |
-| Frontend (Web) | React 19 + Vite + Tailwind CSS 4 |
-| Mobile | React Native / Expo (connect to same backend) |
-| Auth | JWT — access + refresh tokens, email activation |
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+- [Mobile Integration](#mobile-integration)
+- [Configuration](#configuration)
 
 ---
 
-## Setup
+## ✨ Features
 
-### Backend
+### For Customers
+- 🛒 **Browse & Order** — Menu with product images and details
+- 🎟️ **Smart Discounts** — Apply coupon codes with instant validation
+- 📱 **Live Tracking** — Real-time order status with progress bar
+- 🔔 **Pickup Alerts** — Notifications when order is ready
+- 🔐 **Cross-Platform** — Same account works on web and mobile
+
+### For Admin
+- 📦 **Product Management** — Add/edit/delete menu items with images
+- 🖼️ **Easy Image Upload** — Paste any direct image URL
+- 📊 **Order Dashboard** — View, filter, and update all orders
+- 🎫 **Kitchen Queue** — Live ticket board with auto-refresh (15s)
+- 🏷️ **Coupon Builder** — Create flexible discount codes:
+  - Percentage off (e.g., 20% off)
+  - Fixed amount off (e.g., ₱50 off)
+  - Free cheapest item
+  - Set minimums, expiry dates, and usage limits
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Backend** | Django 6 + Django REST Framework + SimpleJWT |
+| **Frontend** | React 19 + Vite + Tailwind CSS 4 |
+| **Mobile** | React Native / Expo |
+| **Authentication** | JWT (access + refresh tokens, email activation) |
+| **Development** | CORS enabled, hot reload, mobile-ready |
+
+---
+
+## 🚀 Quick Start
+
+### Backend Setup
 
 ```bash
 cd backend
-python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
+python -m venv venv
+source venv/bin/activate              # On Windows: venv\Scripts\activate
+
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py createsuperuser   # creates an admin account
-python manage.py runserver 0.0.0.0:8000   # 0.0.0.0 lets mobile devices connect
+python manage.py createsuperuser       # Create admin account
+python manage.py runserver 0.0.0.0:8000
 ```
 
-### Frontend (Web)
+**Note:** `0.0.0.0:8000` allows mobile devices to connect from your local network.
+
+### Frontend (Web) Setup
 
 ```bash
 cd frontend
@@ -40,136 +74,181 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173
+Open **http://localhost:5173** in your browser.
 
-### Mobile (Expo)
+### Mobile (Expo) Setup
 
 ```bash
 cd mobile
 npm install
-cp .env.example .env   # set EXPO_PUBLIC_API_URL to your PC's LAN IP
+cp .env.example .env
+
+# Set EXPO_PUBLIC_API_URL to your machine's local IP (see below)
 npm start
 ```
 
-See [mobile/README.md](mobile/README.md) for emulator URLs and device setup. The mobile app uses the **same JWT login, database, products, orders, and coupons** as web.
+See [mobile/README.md](mobile/README.md) for emulator configuration and device setup instructions.
 
 ---
 
-## Features
+## 📱 Mobile Integration
 
-### Admin
-- **Products** — Add/edit/delete menu items with name, description, category, price, availability, and image URL
-- **Image URL** — Paste any direct image URL (right-click a Google image → "Open image in new tab" → copy URL from address bar)
-- **Orders** — View all customer orders, filter by status, expand for item details, update status
-- **Kitchen Queue** — Live ticket board, "Call Next" button, auto-refreshes every 15s
-- **Coupons** — Create discount codes:
-  - `%` off (e.g. 20% off entire order)
-  - Fixed `₱` off (e.g. ₱50 off)
-  - Free cheapest item in cart
-  - Set minimum order total, expiry dates, and max uses
+### Finding Your Local IP
 
-### Customer
-- Browse menu with photos
-- Add to cart with quantity control
-- Apply coupon code at checkout (validates instantly)
-- Live order tracking (5s polling) with status progress bar
-- "Ready for pickup" popup notification
+The mobile app needs your computer's local IP address to connect to the backend.
 
----
-
-## Mobile Integration Guide
-
-The backend is fully API-driven and ready for a React Native / Expo app to connect.
-
-### Base URL for mobile
-
-Point your mobile app's axios instance to your computer's **local IP** on port 8000:
-
-```js
-// In your React Native / Expo app
-const BASE_URL = "http://192.168.1.X:8000/api";   // replace X with your machine's IP
+**Mac/Linux:**
+```bash
+ifconfig | grep "inet "
+# Look for 192.168.x.x
 ```
 
-Find your IP:
-- **Mac/Linux**: `ifconfig | grep "inet "` → look for 192.168.x.x
-- **Windows**: `ipconfig` → IPv4 Address
+**Windows:**
+```bash
+ipconfig
+# Find "IPv4 Address"
+```
 
-The backend is already configured with `ALLOWED_HOSTS = ["*"]` and `CORS_ALLOW_ALL_ORIGINS = True` for development.
+### Environment Configuration
 
-### API Endpoints
+Update `mobile/.env`:
+```env
+EXPO_PUBLIC_API_URL=http://192.168.1.X:8000/api
+# Replace X with the last octet of your IP
+```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/user/register/` | Register new customer |
-| POST | `/api/user/login/` | Login, get JWT tokens |
-| POST | `/api/user/logout/` | Logout (blacklist refresh) |
-| GET/PUT | `/api/user/profile/` | Get/update profile |
-| GET | `/api/products/` | List menu items (public) |
-| GET/POST | `/api/orders/` | Customer: my orders / place order |
-| GET | `/api/orders/{id}/` | Get single order (with queue ticket) |
-| GET | `/api/queue/` | Get queue list |
-| POST | `/api/coupons/validate/` | Validate coupon before ordering |
+### Authentication Flow
 
-### Authentication on mobile
+Store JWT tokens securely on the device:
 
-```js
-// Store tokens in SecureStore (Expo) or AsyncStorage
+```javascript
 import * as SecureStore from 'expo-secure-store';
 
-// After login:
-await SecureStore.setItemAsync('access_token', data.access);
-await SecureStore.setItemAsync('refresh_token', data.refresh);
-await SecureStore.setItemAsync('user', JSON.stringify(data.user));
+// After login
+await SecureStore.setItemAsync('access_token', response.access);
+await SecureStore.setItemAsync('refresh_token', response.refresh);
+await SecureStore.setItemAsync('user', JSON.stringify(response.user));
 
-// Add to every request header:
-headers: { Authorization: `Bearer ${accessToken}` }
+// Add to request headers
+headers: { 
+  Authorization: `Bearer ${accessToken}` 
+}
 ```
 
-### Accounts work on both web and mobile
+### Real-Time Updates
 
-The same email/password and JWT tokens work across both platforms — a customer who logs in on mobile will see the same orders as on web, and vice versa.
+Example polling implementation for order tracking:
 
-### Real-time updates on mobile
-
-Use polling (setInterval) or a WebSocket library. Example polling in React Native:
-
-```js
+```javascript
 useEffect(() => {
   const interval = setInterval(async () => {
     const res = await fetch(`${BASE_URL}/orders/`, { headers });
     const data = await res.json();
     setOrders(data);
-  }, 5000);
+  }, 5000); // Poll every 5 seconds
+  
   return () => clearInterval(interval);
 }, []);
 ```
 
----
+### Cross-Platform Accounts
 
-## Coupon Examples to Create
-
-| Code | Type | Value | Min Order | Description |
-|---|---|---|---|---|
-| `WELCOME10` | % | 10 | ₱0 | 10% off first order |
-| `SAVE50` | fixed | 50 | ₱200 | ₱50 off orders ₱200+ |
-| `FREEITEM` | free_item | — | ₱150 | Get cheapest item free |
-| `LUNCH20` | % | 20 | ₱100 | 20% lunch discount |
+- Same email/password works on web and mobile
+- JWT tokens are interchangeable
+- Orders, products, and coupons sync automatically
+- Customer sees identical experience on all platforms
 
 ---
 
-## Admin Account
+## 🔌 API Reference
 
-Create via Django management command:
-```bash
-python manage.py createsuperuser
-# Then in Django admin (/admin/) set the user's role to "admin"
+### Authentication
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `POST` | `/api/user/register/` | Register new customer account |
+| `POST` | `/api/user/login/` | Login and receive JWT tokens |
+| `POST` | `/api/user/logout/` | Logout and blacklist refresh token |
+| `GET/PUT` | `/api/user/profile/` | Get or update profile information |
+
+### Products & Ordering
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `GET` | `/api/products/` | List all available menu items (public) |
+| `GET/POST` | `/api/orders/` | View my orders / place new order |
+| `GET` | `/api/orders/{id}/` | Get order details with queue ticket |
+
+### Queue & Promotions
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `GET` | `/api/queue/` | Get current kitchen queue |
+| `POST` | `/api/coupons/validate/` | Validate coupon code before checkout |
+
+---
+
+## ⚙️ Configuration
+
+### Backend Settings
+
+The backend is pre-configured for development with:
+- `ALLOWED_HOSTS = ["*"]` — Accepts requests from any host
+- `CORS_ALLOW_ALL_ORIGINS = True` — Allows cross-origin requests
+
+For **production**, update these settings in `backend/settings.py`:
+```python
+ALLOWED_HOSTS = ["yourdomain.com", "www.yourdomain.com"]
+CORS_ALLOWED_ORIGINS = ["https://yourdomain.com"]
 ```
 
-Or update via shell:
+---
+
+## 🎟️ Sample Coupons to Create
+
+Get started by creating these example promotional codes in the admin panel:
+
+| Code | Type | Value | Min Order | Usage |
+|------|------|-------|-----------|-------|
+| `WELCOME10` | Percentage | 10% | ₱0 | First-time customer incentive |
+| `SAVE50` | Fixed | ₱50 off | ₱200 | Bulk order discount |
+| `FREEITEM` | Free Item | Cheapest | ₱150 | Loyalty reward |
+| `LUNCH20` | Percentage | 20% | ₱100 | Off-peak hours promotion |
+
+---
+
+## 👨‍💼 Admin Account Setup
+
+### Via Django Management Command
+
+```bash
+python manage.py createsuperuser
+# Follow prompts to create account
+# Then go to /admin/ and set the user's role to "admin"
+```
+
+### Via Django Shell
+
 ```bash
 python manage.py shell
 >>> from user.models import User
 >>> u = User.objects.get(email="your@email.com")
->>> u.role = "admin"; u.is_active = True; u.save()
+>>> u.role = "admin"
+>>> u.is_active = True
+>>> u.save()
 ```
 
+---
+
+## 📝 License
+
+This project is developed for Crammer's Restaurant.
+
+---
+
+## 🤝 Support
+
+For setup issues, check the individual README files:
+- [Backend README](backend/README.md)
+- [Frontend README](frontend/README.md)
+- [Mobile README](mobile/README.md)
