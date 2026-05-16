@@ -15,10 +15,20 @@ api.interceptors.request.use((config) => {
 });
 
 // Handle token refresh on 401 response
+const PUBLIC_PATHS = ["/user/login/", "/user/register/", "/user/activate/", "/user/resend-activation/"];
+
+function isPublicAuthRequest(config) {
+  const url = config?.url || "";
+  return PUBLIC_PATHS.some((p) => url.includes(p));
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    if (isPublicAuthRequest(originalRequest)) {
+      return Promise.reject(error);
+    }
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
@@ -46,6 +56,7 @@ export const authAPI = {
   register: (userData) => api.post("/user/register/", userData),
   login: (email, password) => api.post("/user/login/", { email, password }),
   logout: (refresh) => api.post("/user/logout/", { refresh }),
+  resendActivation: (email) => api.post("/user/resend-activation/", { email }),
   getProfile: () => api.get("/user/profile/"),
   updateProfile: (userData) => api.put("/user/profile/", userData),
 };

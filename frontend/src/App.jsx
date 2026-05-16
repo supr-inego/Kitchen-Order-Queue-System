@@ -5,18 +5,16 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Activate from "./pages/Activate";
-
-// Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminQueue from "./pages/admin/AdminQueue";
-
-// Customer pages
+import AdminCoupons from "./pages/admin/AdminCoupons";
 import CustomerHome from "./pages/customer/CustomerHome";
 import CustomerOrder from "./pages/customer/CustomerOrder";
 import CustomerMyOrders from "./pages/customer/CustomerMyOrders";
 import CustomerTrack from "./pages/customer/CustomerTrack";
+import CustomerCoupons from "./pages/customer/CustomerCoupons";
 
 export const AuthContext = createContext(null);
 export function useAuth() { return useContext(AuthContext); }
@@ -25,9 +23,8 @@ function ProtectedRoute({ children, requiredRole }) {
   const { isLoggedIn, loading, user } = useAuth();
   if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-500">Loading...</div>;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
-  if (requiredRole && user?.role !== requiredRole) {
+  if (requiredRole && user?.role !== requiredRole)
     return <Navigate to={user?.role === "admin" ? "/admin" : "/home"} replace />;
-  }
   return children;
 }
 
@@ -39,10 +36,7 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     const storedUser = localStorage.getItem("user");
-    if (token && storedUser) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(storedUser));
-    }
+    if (token && storedUser) { setIsLoggedIn(true); setUser(JSON.parse(storedUser)); }
     setLoading(false);
   }, []);
 
@@ -50,16 +44,14 @@ export default function App() {
     localStorage.setItem("access_token", access);
     localStorage.setItem("refresh_token", refresh);
     localStorage.setItem("user", JSON.stringify(userData));
-    setIsLoggedIn(true);
-    setUser(userData);
+    setIsLoggedIn(true); setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    setUser(null);
+    setIsLoggedIn(false); setUser(null);
   };
 
   const isAdmin = user?.role === "admin";
@@ -77,19 +69,16 @@ export default function App() {
               <Route path="/activate/:uid/:token" element={<Activate />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/" element={<Navigate to={isLoggedIn ? defaultHome : "/login"} replace />} />
-
-              {/* Admin routes */}
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/products" element={<ProtectedRoute requiredRole="admin"><AdminProducts /></ProtectedRoute>} />
               <Route path="/admin/orders" element={<ProtectedRoute requiredRole="admin"><AdminOrders /></ProtectedRoute>} />
               <Route path="/admin/queue" element={<ProtectedRoute requiredRole="admin"><AdminQueue /></ProtectedRoute>} />
-
-              {/* Customer routes */}
+              <Route path="/admin/coupons" element={<ProtectedRoute requiredRole="admin"><AdminCoupons /></ProtectedRoute>} />
               <Route path="/home" element={<ProtectedRoute requiredRole="customer"><CustomerHome /></ProtectedRoute>} />
+              <Route path="/coupons" element={<ProtectedRoute requiredRole="customer"><CustomerCoupons /></ProtectedRoute>} />
               <Route path="/order" element={<ProtectedRoute requiredRole="customer"><CustomerOrder /></ProtectedRoute>} />
               <Route path="/my-orders" element={<ProtectedRoute requiredRole="customer"><CustomerMyOrders /></ProtectedRoute>} />
               <Route path="/track" element={<ProtectedRoute requiredRole="customer"><CustomerTrack /></ProtectedRoute>} />
-
               <Route path="*" element={<Navigate to={isLoggedIn ? defaultHome : "/login"} replace />} />
             </Routes>
           </main>

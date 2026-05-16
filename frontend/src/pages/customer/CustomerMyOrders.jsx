@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/api";
-
-function money(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "0.00";
-  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+import OrderTotalsSummary from "../../components/OrderTotalsSummary";
+import { getOrderTotals, money } from "../../utils/orderTotals";
 
 function badge(s) {
   switch (s) {
@@ -46,6 +42,7 @@ export default function CustomerMyOrders() {
   function renderOrder(o) {
     const currentStep = STATUS_FLOW.indexOf(o.status);
     const isOpen = expanded === o.id;
+    const { discount } = getOrderTotals(o);
     return (
       <div key={o.id} className="rounded-2xl bg-white border shadow-sm overflow-hidden">
         <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer"
@@ -62,6 +59,9 @@ export default function CustomerMyOrders() {
           </div>
           <div className="flex items-center gap-3">
             <span className={`text-xs px-2.5 py-1 rounded-full border font-semibold capitalize ${badge(o.status)}`}>{o.status}</span>
+            {discount > 0 && (
+              <span className="text-xs text-green-700 font-semibold">−₱{money(discount)}</span>
+            )}
             <span className="font-extrabold">₱{money(o.total_price)}</span>
             <span className="text-gray-400">{isOpen ? "▲" : "▼"}</span>
           </div>
@@ -101,9 +101,10 @@ export default function CustomerMyOrders() {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t">
-                  <td colSpan={2} className="pt-2 font-bold text-right">Total</td>
-                  <td className="pt-2 font-extrabold text-right">₱{money(o.total_price)}</td>
+                <tr>
+                  <td colSpan={3} className="pt-3">
+                    <OrderTotalsSummary order={o} />
+                  </td>
                 </tr>
               </tfoot>
             </table>

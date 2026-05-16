@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { api } from "../../api/api";
-
-function money(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "0.00";
-  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+import OrderTotalsSummary from "../../components/OrderTotalsSummary";
+import { money } from "../../utils/orderTotals";
 
 const STEPS = ["pending", "preparing", "ready", "completed"];
 const STEP_LABELS = { pending: "Order Received", preparing: "Being Prepared", ready: "Ready for Pickup", completed: "Completed" };
@@ -142,10 +138,7 @@ export default function CustomerTrack() {
                   <span className="font-semibold">₱{money(Number(it.unit_price) * Number(it.quantity))}</span>
                 </div>
               ))}
-              <div className="border-t pt-2 flex justify-between font-extrabold">
-                <span>Total</span>
-                <span>₱{money(order.total_price)}</span>
-              </div>
+              <OrderTotalsSummary order={order} className="border-t pt-3 mt-2" />
             </div>
             {order.note && (
               <div className="mt-3 text-xs text-gray-500 italic">Note: {order.note}</div>

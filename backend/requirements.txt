@@ -14,3 +14,4 @@ django-cors-headers==4.4.0             # Allow React frontend on localhost:5173
 # psycopg[binary]==3.2.1
 
 python-dotenv==1.0.1
+requests==2.32.3

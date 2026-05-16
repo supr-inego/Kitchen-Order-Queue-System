@@ -65,25 +65,71 @@ class UserActivateView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "Invalid activation link."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Idempotent: already active (e.g. React Strict Mode double-request)
         if user.is_active:
-            return Response({"detail": "Account is already active."}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Account is already active. You can log in."},
+                status=status.HTTP_200_OK,
+            )
 
         if not user.activation_token or user.activation_token != token:
-            return Response({"detail": "Invalid or expired activation token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid or expired activation token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # Activate the account and clear the token
         user.is_active = True
         user.activation_token = ""
         user.save(update_fields=["is_active", "activation_token"])
 
-        return Response({"message": "Account activated successfully! You can now log in."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Account activated successfully! You can now log in."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResendActivationView(APIView):
+    """POST /api/user/resend-activation/  body: { "email": "..." }"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Don't reveal whether email exists
+            return Response(
+                {"message": "If that email is registered and not yet active, we sent a new activation link."},
+                status=status.HTTP_200_OK,
+            )
+
+        if user.is_active:
+            return Response({"message": "This account is already active. You can log in."})
+
+        try:
+            send_activation_email(user, request)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error("Resend activation failed for %s: %s", email, e)
+            return Response(
+                {"detail": "Could not send email. Check server email settings and try again."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response(
+            {"message": "Activation email sent. Please check your inbox (and spam folder)."},
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = UserLoginSerializer(data=request.data)
+        serializer = UserLoginSerializer(data=request.data, context={"request": request})
 
         if serializer.is_valid():
             user = serializer.validated_data["user"]
