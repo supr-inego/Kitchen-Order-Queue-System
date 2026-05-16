@@ -1,0 +1,17 @@
+﻿# ── Core Framework ─────────────────────────────────────────────────────────────
+Django==6.0.3
+djangorestframework==3.15.2
+
+# ── Authentication & JWT ───────────────────────────────────────────────────────
+djangorestframework-simplejwt==5.3.1   # JWT tokens + token blacklist for logout
+
+# ── CORS ───────────────────────────────────────────────────────────────────────
+django-cors-headers==4.4.0             # Allow React frontend on localhost:5173
+
+# ── Database ───────────────────────────────────────────────────────────────────
+# SQLite is used by default (no extra driver needed).
+# Uncomment the line below ONLY when switching to PostgreSQL:
+# psycopg[binary]==3.2.1
+
+python-dotenv==1.0.1
+requests==2.32.3
