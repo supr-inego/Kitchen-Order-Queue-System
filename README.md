@@ -1,4 +1,4 @@
-# Crammer's Restaurant — Kitchen Order Queue System v3
+# Crammer's Restaurant — Kitchen Order Queue System 
 
 A full-stack restaurant ordering system with:
 - **Product images** (via URL — paste any Google Image address)
