@@ -1,291 +1,175 @@
-# 🍽️ Crammer's Restaurant - Kitchen Order Queue System
+# Crammer's Restaurant — Kitchen Order Queue System v3
 
-A full-stack restaurant ordering and kitchen management system with role-based access control, real-time order tracking, and a kitchen queue workflow.
-
----
-
-## 👥 Collaborators
-
-| Name |
-|------|
-| Cyril Inego Dayak |
-| Kyle Angela F. Jumilla |
-| Meri Cairylle Ara Comique |
-| Merryl Gabrielle Louise Ignacio |
-| Dominic O. Gabac |
-| Jastine V. Agana |
-| Gabriel D. LLacuna |
+A full-stack restaurant ordering system with:
+- **Product images** (via URL — paste any Google Image address)
+- **Discount coupons** (%, fixed ₱, or free cheapest item)
+- **No admin self-registration** — all registrations are customers only
+- **Mobile-ready API** — same backend works for React Native / Expo apps
 
 ---
 
-## 🛠️ Tech Stack
+## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Backend** | Django 6.0.3 + Django REST Framework 3.15.2 |
-| **Authentication** | SimpleJWT (access + refresh tokens, blacklist on logout) |
-| **Frontend** | React 19 + Vite 7 + Tailwind CSS 4 |
-| **HTTP Client** | Axios (with automatic token refresh interceptors) |
-| **Database** | SQLite (development) — PostgreSQL-ready |
-| **Email** | Django email backend (console or SMTP via `.env`) |
-| **CORS** | django-cors-headers |
+| Layer | Tech |
+|---|---|
+| Backend | Django 6 + DRF + SimpleJWT |
+| Frontend (Web) | React 19 + Vite + Tailwind CSS 4 |
+| Mobile | React Native / Expo (connect to same backend) |
+| Auth | JWT — access + refresh tokens, email activation |
 
 ---
 
-## ✨ Features
+## Setup
 
-### 👤 Customer
-- Register with email verification (activation link sent to inbox)
-- Log in / log out securely
-- Browse the full menu, filtered by category
-- Build a cart and place orders with optional notes
-- View personal order history with a live status progress bar
-- Track any order by ID on the Track page
-
-### 🛠️ Admin / Staff
-- **Dashboard** — live stats overview
-- **Products** — add, edit, delete menu items; set category and availability
-- **Orders** — view all customer orders, filter by status, update order status
-- **Kitchen Queue** — "Call Next" button advances the next waiting ticket to cooking; auto-refreshes every 15 seconds
-
----
-
-## 🗂️ Project Structure
-
-```
-restaurant-system/
-├── backend/
-│   ├── api/                  # Products, Orders, Queue (models, views, serializers, URLs)
-│   ├── user/                 # Custom User model, auth views, email activation
-│   ├── config/               # Django settings, root URL conf, WSGI/ASGI
-│   ├── templates/emails/     # HTML email templates (activation)
-│   ├── requirements.txt
-│   └── manage.py
-└── frontend/
-    ├── src/
-    │   ├── api/api.js         # Axios instance + auth interceptors
-    │   ├── components/        # Navbar, EditModal
-    │   ├── pages/
-    │   │   ├── admin/         # AdminDashboard, AdminProducts, AdminOrders, AdminQueue
-    │   │   └── customer/      # CustomerHome, CustomerOrder, CustomerMyOrders, CustomerTrack
-    │   ├── App.jsx            # AuthContext, ProtectedRoute, routing
-    │   └── main.jsx
-    ├── package.json
-    └── vite.config.js
-```
-
----
-
-## ⚙️ Setup & Installation
-
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-
-### 1. Clone the Repository
-
-```bash
-git clone <[your-repo-url](https://github.com/supr-inego/Kitchen-Order-Queue-System)>
-cd restaurant-system
-```
-
-### 2. Backend Setup
+### Backend
 
 ```bash
 cd backend
-
-# Create and activate virtual environment
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Apply database migrations
 python manage.py migrate
-
-# Create a superuser (admin account)
-python manage.py createsuperuser
-
-# Start the development server
-python manage.py runserver
+python manage.py createsuperuser   # creates an admin account
+python manage.py runserver 0.0.0.0:8000   # 0.0.0.0 lets mobile devices connect
 ```
 
-Backend runs at **http://localhost:8000**
-Django admin panel at **http://localhost:8000/admin**
-
-### 3. Frontend Setup
+### Frontend (Web)
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the development server
 npm run dev
 ```
 
-Frontend runs at **http://localhost:5173**
+Open http://localhost:5173
 
-### 4. Environment Variables (Optional)
+### Mobile (Expo)
 
-Create a `.env` file inside `backend/` to configure email and secrets:
+```bash
+cd mobile
+npm install
+cp .env.example .env   # set EXPO_PUBLIC_API_URL to your PC's LAN IP
+npm start
+```
 
-```env
-DJANGO_SECRET_KEY=your-secret-key-here
+See [mobile/README.md](mobile/README.md) for emulator URLs and device setup. The mobile app uses the **same JWT login, database, products, orders, and coupons** as web.
 
-# Email (leave blank to use console backend during dev)
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your@email.com
-EMAIL_HOST_PASSWORD=your-app-password
-EMAIL_USE_TLS=True
-DEFAULT_FROM_EMAIL=your@email.com
+---
 
-# Frontend URL used to build activation links in emails
-FRONTEND_URL=http://localhost:5173
+## Features
+
+### Admin
+- **Products** — Add/edit/delete menu items with name, description, category, price, availability, and image URL
+- **Image URL** — Paste any direct image URL (right-click a Google image → "Open image in new tab" → copy URL from address bar)
+- **Orders** — View all customer orders, filter by status, expand for item details, update status
+- **Kitchen Queue** — Live ticket board, "Call Next" button, auto-refreshes every 15s
+- **Coupons** — Create discount codes:
+  - `%` off (e.g. 20% off entire order)
+  - Fixed `₱` off (e.g. ₱50 off)
+  - Free cheapest item in cart
+  - Set minimum order total, expiry dates, and max uses
+
+### Customer
+- Browse menu with photos
+- Add to cart with quantity control
+- Apply coupon code at checkout (validates instantly)
+- Live order tracking (5s polling) with status progress bar
+- "Ready for pickup" popup notification
+
+---
+
+## Mobile Integration Guide
+
+The backend is fully API-driven and ready for a React Native / Expo app to connect.
+
+### Base URL for mobile
+
+Point your mobile app's axios instance to your computer's **local IP** on port 8000:
+
+```js
+// In your React Native / Expo app
+const BASE_URL = "http://192.168.1.X:8000/api";   // replace X with your machine's IP
+```
+
+Find your IP:
+- **Mac/Linux**: `ifconfig | grep "inet "` → look for 192.168.x.x
+- **Windows**: `ipconfig` → IPv4 Address
+
+The backend is already configured with `ALLOWED_HOSTS = ["*"]` and `CORS_ALLOW_ALL_ORIGINS = True` for development.
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/user/register/` | Register new customer |
+| POST | `/api/user/login/` | Login, get JWT tokens |
+| POST | `/api/user/logout/` | Logout (blacklist refresh) |
+| GET/PUT | `/api/user/profile/` | Get/update profile |
+| GET | `/api/products/` | List menu items (public) |
+| GET/POST | `/api/orders/` | Customer: my orders / place order |
+| GET | `/api/orders/{id}/` | Get single order (with queue ticket) |
+| GET | `/api/queue/` | Get queue list |
+| POST | `/api/coupons/validate/` | Validate coupon before ordering |
+
+### Authentication on mobile
+
+```js
+// Store tokens in SecureStore (Expo) or AsyncStorage
+import * as SecureStore from 'expo-secure-store';
+
+// After login:
+await SecureStore.setItemAsync('access_token', data.access);
+await SecureStore.setItemAsync('refresh_token', data.refresh);
+await SecureStore.setItemAsync('user', JSON.stringify(data.user));
+
+// Add to every request header:
+headers: { Authorization: `Bearer ${accessToken}` }
+```
+
+### Accounts work on both web and mobile
+
+The same email/password and JWT tokens work across both platforms — a customer who logs in on mobile will see the same orders as on web, and vice versa.
+
+### Real-time updates on mobile
+
+Use polling (setInterval) or a WebSocket library. Example polling in React Native:
+
+```js
+useEffect(() => {
+  const interval = setInterval(async () => {
+    const res = await fetch(`${BASE_URL}/orders/`, { headers });
+    const data = await res.json();
+    setOrders(data);
+  }, 5000);
+  return () => clearInterval(interval);
+}, []);
 ```
 
 ---
 
-## 🔐 Authentication Flow
+## Coupon Examples to Create
 
-1. **Register** — User submits registration form → account created with `is_active=False` → activation email sent with a unique link.
-2. **Activate** — User clicks the link (`/activate/<uid>/<token>`) → account activated.
-3. **Login** — Returns JWT access token (1-hour lifetime) and refresh token (7-day lifetime).
-4. **Auto-refresh** — Axios interceptor silently refreshes the access token on 401 responses.
-5. **Logout** — Refresh token is blacklisted server-side; tokens cleared from localStorage.
-
-### Role-Based Access
-
-| Role | Accessible Routes |
-|------|------------------|
-| `admin` | `/admin`, `/admin/products`, `/admin/orders`, `/admin/queue` |
-| `customer` | `/home`, `/order`, `/my-orders`, `/track` |
-
-Routes are protected by `ProtectedRoute` in `App.jsx`, which redirects users to the appropriate home based on their role.
+| Code | Type | Value | Min Order | Description |
+|---|---|---|---|---|
+| `WELCOME10` | % | 10 | ₱0 | 10% off first order |
+| `SAVE50` | fixed | 50 | ₱200 | ₱50 off orders ₱200+ |
+| `FREEITEM` | free_item | — | ₱150 | Get cheapest item free |
+| `LUNCH20` | % | 20 | ₱100 | 20% lunch discount |
 
 ---
 
-## 🔌 API Reference
+## Admin Account
 
-### Auth Endpoints (`/api/user/`)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/register/` | Public | Register a new user |
-| `GET` | `/activate/<uid>/<token>/` | Public | Activate account via email link |
-| `POST` | `/login/` | Public | Log in, receive JWT tokens |
-| `POST` | `/logout/` | Required | Blacklist refresh token |
-| `POST` | `/token/refresh/` | Public | Get new access token from refresh token |
-| `GET` | `/profile/` | Required | Get current user's profile |
-| `PUT` | `/profile/` | Required | Update current user's profile (partial update supported) |
-
-### Product Endpoints (`/api/products/`)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/products/` | Public | List all menu items |
-| `GET` | `/api/products/<id>/` | Public | Get a single product |
-| `POST` | `/api/products/` | Admin | Create a new product |
-| `PUT/PATCH` | `/api/products/<id>/` | Admin | Update a product |
-| `DELETE` | `/api/products/<id>/` | Admin | Delete a product |
-
-### Order Endpoints (`/api/orders/`)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/orders/` | Required | List orders (customers see only their own) |
-| `POST` | `/api/orders/` | Required | Place a new order (queue ticket auto-created) |
-| `GET` | `/api/orders/<id>/` | Required | Get order details |
-| `PUT/PATCH` | `/api/orders/<id>/` | Required | Update order (status change) |
-| `DELETE` | `/api/orders/<id>/` | Admin | Delete an order |
-
-### Queue Endpoints (`/api/queue/`)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/queue/` | Required | List all queue tickets |
-| `GET` | `/api/queue/<id>/` | Required | Get a queue ticket |
-| `PUT/PATCH` | `/api/queue/<id>/` | Admin | Update queue status (syncs order status) |
-| `POST` | `/api/queue/next/` | Admin | Advance the next waiting ticket to "cooking" |
-
-> Queue tickets cannot be created manually — they are auto-generated when an order is placed.
-
----
-
-## 📊 Data Models
-
-### Order Status Flow
-
-```
-pending → preparing → ready → completed → cancelled
+Create via Django management command:
+```bash
+python manage.py createsuperuser
+# Then in Django admin (/admin/) set the user's role to "admin"
 ```
 
-### Queue Status Flow (mirrors order status)
-
+Or update via shell:
+```bash
+python manage.py shell
+>>> from user.models import User
+>>> u = User.objects.get(email="your@email.com")
+>>> u.role = "admin"; u.is_active = True; u.save()
 ```
-waiting → cooking → serving → done
-```
 
-When the admin updates a queue ticket's status, the linked order's status is automatically synced:
-
-| Queue Status | Order Status |
-|-------------|-------------|
-| waiting | pending |
-| cooking | preparing |
-| serving | ready |
-| done | completed |
-
----
-
-## 🚀 How It Works (End-to-End)
-
-1. Customer registers, activates their account via email, and logs in.
-2. Customer browses the menu on the Home page, adds items to the cart.
-3. Customer submits the order — a Queue ticket is automatically created.
-4. Admin sees the new order appear in Orders and the Kitchen Queue instantly.
-5. Admin clicks **"Call Next"** to pull the next waiting ticket into the cooking queue.
-6. As the admin advances the queue status, the customer's order status updates live.
-7. Customer can monitor progress on **My Orders** or the **Track** page.
-
----
-
-## 🛠️ Troubleshooting
-
-**Login fails immediately after registration**
-The account must be activated first. Check your email inbox for the activation link. During development (console email backend), the link is printed in the Django terminal.
-
-**Tokens stop working**
-Access tokens expire after 1 hour. The frontend refreshes them automatically. If both tokens are expired, the user is redirected to `/login`.
-
-**Backend returns 500**
-Run `python manage.py migrate` to ensure all migrations are applied, and check the Django terminal for stack traces.
-
-**CORS errors in the browser**
-Confirm the frontend dev server URL (e.g. `http://localhost:5173`) is listed in `CORS_ALLOWED_ORIGINS` inside `backend/config/settings.py`.
-
-**Activation email not received**
-In development, `EMAIL_BACKEND` defaults to the console backend — look for the activation URL printed in the Django terminal, not your inbox. Set SMTP credentials in `.env` to send real emails.
-
----
-
-## 📦 Dependencies
-
-### Backend (`requirements.txt`)
-- `Django 6.0.3`
-- `djangorestframework 3.15.2`
-- `djangorestframework-simplejwt 5.3.1`
-- `django-cors-headers 4.4.0`
-- `python-dotenv 1.0.1`
-
-### Frontend (`package.json`)
-- `react 19`, `react-dom 19`, `react-router-dom 7`
-- `axios 1.x`
-- `tailwindcss 4`, `@tailwindcss/vite`
-- `vite 7`, `@vitejs/plugin-react`

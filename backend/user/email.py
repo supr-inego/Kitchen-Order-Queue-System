@@ -15,14 +15,21 @@ def send_activation_email(user, request):
     user.activation_token = token
     user.save(update_fields=["activation_token"])
 
-    # Build the activation URL that points to the frontend
-    frontend_base = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+    frontend_base = getattr(settings, "FRONTEND_URL", "http://localhost:5173").rstrip("/")
     activation_url = f"{frontend_base}/activate/{user.pk}/{token}/"
 
-    # Render HTML email from template
+    # Direct API link (works even if frontend URL is wrong during dev)
+    scheme = "https" if request.is_secure() else "http"
+    host = request.get_host()
+    api_activation_url = f"{scheme}://{host}/api/user/activate/{user.pk}/{token}/"
+
     html_message = render_to_string(
         "emails/activation.html",
-        {"user": user, "url": activation_url},
+        {
+            "user": user,
+            "url": activation_url,
+            "api_url": api_activation_url,
+        },
     )
     plain_message = strip_tags(html_message)
 

@@ -1,25 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { api } from "../api/api";
 
 export default function Activate() {
   const { uid, token } = useParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState("loading"); // "loading" | "success" | "error"
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
+  const started = useRef(false);
 
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+
     const activate = async () => {
       try {
         const res = await api.get(`/user/activate/${uid}/${token}/`);
-        setMessage(res.data.message || "Account activated successfully!");
+        const text =
+          res.data.message ||
+          (typeof res.data.detail === "string" &&
+          res.data.detail.toLowerCase().includes("active")
+            ? res.data.detail
+            : null) ||
+          "Account activated successfully!";
+        setMessage(text);
         setStatus("success");
-        // Redirect to login after 3 seconds
         setTimeout(() => navigate("/login"), 3000);
       } catch (err) {
         setMessage(
           err.response?.data?.detail ||
-          "Activation failed. The link may be invalid or already used."
+            "Activation failed. The link may be invalid or already used."
         );
         setStatus("error");
       }

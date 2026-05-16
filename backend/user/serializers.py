@@ -7,44 +7,22 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id",
-            "email",
-            "first_name",
-            "last_name",
-            "address",
-            "age",
-            "birthday",
-            "phone",
-            "role",
-            "is_active",
-            "date_joined",
-            "updated_at",
+            "id", "email", "first_name", "last_name",
+            "address", "age", "birthday", "phone",
+            "role", "is_active", "date_joined", "updated_at",
         ]
         read_only_fields = ["id", "role", "is_active", "date_joined", "updated_at"]
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        write_only=True, required=True, style={"input_type": "password"}
-    )
-    password_confirm = serializers.CharField(
-        write_only=True, required=True, style={"input_type": "password"}
-    )
-    role = serializers.ChoiceField(choices=["admin", "customer"], default="customer")
+    password = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
+    password_confirm = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
 
     class Meta:
         model = User
         fields = [
-            "email",
-            "password",
-            "password_confirm",
-            "first_name",
-            "last_name",
-            "address",
-            "age",
-            "birthday",
-            "phone",
-            "role",
+            "email", "password", "password_confirm",
+            "first_name", "last_name", "address", "age", "birthday", "phone",
         ]
 
     def validate_email(self, value):
@@ -57,6 +35,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("password_confirm")
+        # Always customer — admins are created via Django admin / createsuperuser
+        validated_data["role"] = "customer"
         validated_data["is_active"] = False
         return User.objects.create_user(**validated_data)
 
@@ -68,20 +48,15 @@ class UserLoginSerializer(serializers.Serializer):
     def validate(self, data):
         email = data.get("email", "").lower()
         password = data.get("password")
-
         if not email or not password:
             raise serializers.ValidationError("Must include email and password.")
-
-        user = authenticate(username=email, password=password)
-
+        user = authenticate(request=self.context.get("request"), email=email, username=email, password=password)
         if user is None:
             raise serializers.ValidationError("Invalid email or password.")
-
         if not user.is_active:
             raise serializers.ValidationError(
-                "Account is not activated. Please check your email for the activation link."
+                "Account not activated. Please check your email for the activation link."
             )
-
         data["user"] = user
         return data
 

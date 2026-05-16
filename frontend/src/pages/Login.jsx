@@ -8,13 +8,16 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendBusy, setResendBusy] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setInfo("");
     setLoading(true);
     try {
       const response = await authAPI.login(email, password);
@@ -30,6 +33,27 @@ export default function Login() {
     } finally { setLoading(false); }
   };
 
+  async function handleResendActivation() {
+    if (!email.trim()) {
+      setError("Enter your email above, then click resend activation.");
+      return;
+    }
+    setResendBusy(true);
+    setError("");
+    setInfo("");
+    try {
+      const res = await authAPI.resendActivation(email.trim().toLowerCase());
+      setInfo(res.data.message || "Activation email sent.");
+    } catch (err) {
+      setError(err.response?.data?.detail || "Could not resend activation email.");
+    } finally {
+      setResendBusy(false);
+    }
+  }
+
+  const showResend =
+    error && error.toLowerCase().includes("not activated");
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -40,6 +64,18 @@ export default function Login() {
         </div>
         <h1>Sign In</h1>
         {error && <div className="error-message">{error}</div>}
+        {info && <div className="error-message" style={{ background: "#dcfce7", color: "#15803d" }}>{info}</div>}
+        {showResend && (
+          <button
+            type="button"
+            className="btn-login"
+            style={{ marginTop: 8, background: "#374151" }}
+            onClick={handleResendActivation}
+            disabled={resendBusy}
+          >
+            {resendBusy ? "Sending…" : "Resend activation email"}
+          </button>
+        )}
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
